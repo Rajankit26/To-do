@@ -50,6 +50,10 @@ userSchema.methods = {
        return JWT.sign({_id : this._id,role :this.role},process.env.JWT_SECRET,{
         expiresIn : "7d"
        })
+    },
+
+    comparePassword : function(enteredPassword){
+        return bcrypt.compare(enteredPassword,this.password);
     }
 }
 export default mongoose.model("User",userSchema);
