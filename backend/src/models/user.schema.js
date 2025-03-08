@@ -1,5 +1,11 @@
 import mongoose from "mongoose"
+import bcrypt from "bcrypt"
+import JWT from "jsonwebtoken"
+import dotenv from "dotenv"
 import AuthRoles from "../utils/authRoles.js"
+
+
+dotenv.config();
 
 const userSchema = new mongoose.Schema(
     {
@@ -31,4 +37,19 @@ const userSchema = new mongoose.Schema(
     }
 )
 
+// Encrypt the password before saving into DB : PRE-HOOKS
+
+userSchema.pre("save", async function(next){
+    if(!this.isModified("password"))return next();
+    this.password = await bcrypt.hash(this.password,11)
+    next();
+})
+
+userSchema.methods = {
+    getJWTtoken : function(){
+       return JWT.sign({_id : this._id,role :this.role},process.env.JWT_SECRET,{
+        expiresIn : "7d"
+       })
+    }
+}
 export default mongoose.model("User",userSchema);
